@@ -71,6 +71,8 @@ export const BarChart = ({ bars, minLabel, maxLabel }: BarChartProps) => {
             return (
               <Bar
                 key={index}
+                index={index}
+                binCount={bars.length}
                 heightPercent={heightPercent}
                 label={coerceLabel(label)}
                 highlightLabel={coerceLabel(highlightLabel)}

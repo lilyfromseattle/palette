@@ -64,8 +64,12 @@ const HighlightLabelPositioner = styled(BaseLabelPositioner)`
   flex-direction: column;
   align-items: center;
 `
-const HighlightLabelBox = styled(Flex)`
+export interface HighlightLabelBoxProps {
+  left: string
+}
+const HighlightLabelBox = styled(Flex).attrs<HighlightLabelBoxProps>({})`
   position: relative;
+  left: ${props => props.left};
   background-color: ${color("white100")};
   border: 1px solid ${color("black10")};
   border-radius: 2px;
@@ -99,21 +103,39 @@ const HighlightLabel = ({
   children,
   onMeasureHighlightLabel,
   opacity,
+  index,
+  binCount,
 }: {
   children: React.ReactNode
   // this label is absolutely positioned and it might obscure content above the
   // bar chart if it gets too tall. So it needs to measure itself to let the
   // parent BarChart set an appropriate min-height.
   onMeasureHighlightLabel: (height: number) => void
+  index: number
   opacity: number
+  binCount: number
 }) => {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     onMeasureHighlightLabel(ref.current.offsetHeight)
   })
+
+  const isFirst = index === 0
+  const isLast = index === binCount - 1
+
+  let left
+
+  if (isFirst) {
+    left = "23%"
+  } else if (isLast) {
+    left = "-26%"
+  } else {
+    left = "0"
+  }
+
   return (
     <HighlightLabelPositioner ref={ref as any} style={{ opacity }}>
-      <HighlightLabelBox>{children}</HighlightLabelBox>
+      <HighlightLabelBox left={left}>{children}</HighlightLabelBox>
       <LabelLine />
     </HighlightLabelPositioner>
   )
@@ -137,12 +159,16 @@ export const Bar = ({
   highlightLabel,
   hasEnteredViewport,
   onMeasureHeight,
+  index,
+  binCount,
 }: {
   heightPercent: number
   label: React.ReactNode
   highlightLabel?: React.ReactNode
   hasEnteredViewport: boolean
   onMeasureHeight?: (height: number) => void
+  index: number
+  binCount: number
 }) => {
   const [hover, setHover] = useState(false)
   // Before the bar has entered the view port it will have a height of 0
@@ -164,6 +190,8 @@ export const Bar = ({
     >
       {highlightLabel && (
         <HighlightLabel
+          index={index}
+          binCount={binCount}
           opacity={hasEnteredViewport ? 1 : 0}
           onMeasureHighlightLabel={labelHeight =>
             onMeasureHeight(labelHeight + finalBarHeight)
